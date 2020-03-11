@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 using namespace std;
-int desk()
+int main()
 {
     string l1, l2, l3, l4, l5, l6, l7, l8, l9;
     l1 = "8 r n b q k b n r";
