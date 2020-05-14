@@ -1,8 +1,21 @@
-all:launch
+.PHONY: all clean install uninstall 
 
-comp: chessdesk.cpp
+CC = g++
+CFLAGS = -std=c++11 -c -MP -MMD -Wall -Werror
+SRC = src\\main.cpp src\\chessdesk.cpp
+OBJ = build\\main.o build\\chessdesk.o
+EXEC = chess
 
-	g++ -Wall -Werror -o chessdesk chessdesk.cpp
+all: $(SRC) $(EXEC) 
 
-launch: comp
-	./chessdesk
+-include build//*.d
+
+$(EXEC): $(OBJ)
+	$(CC) $(OBJ) -o $@
+
+build\\%.o: src\\%.cpp	
+	$(CC) $(CFLAGS) $< -o $@
+
+
+clean:  
+	rm -rf build//*.o build//*.d 
