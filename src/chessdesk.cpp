@@ -1,35 +1,13 @@
 #include "chessdesk.h"
 
 using namespace std;
-
-bool Desk::FindChessFigureType()
+bool Desk::FindChessFigurePosition(char x, char y)
 {
-    string FigureType = "KQRNB";
-    for (int i; i <(int)notation_step_str.size(); i++)
-    {
-        if (notation_step_str[char_id] == FigureType[i])
-        {
-            char_id++;
-            figure = FigureType[i];
-            return true;
-        }
-    }
-
-    if ((int)notation_step_str[char_id] <= 104 && (int)notation_step_str[char_id] >= 97)
-    {
-        figure = 'P';
-        return true;
-    }
-    return false;
-}
-
-bool Desk::FindChessCellPosition(char x, char y)
-{
-    chess_cell_position.good = false;
+    chess_cell_position.status = false;
     for (int i = 1; i < 9; i++) {
         if (desk[0][i] == x) {
             chess_cell_position.y = i;
-            chess_cell_position.good = true;
+            chess_cell_position.status = true;
             char_id++;
             break;
         }
@@ -37,95 +15,125 @@ bool Desk::FindChessCellPosition(char x, char y)
     for (int j = 1; j < 9; j++) {
         if (desk[j][0] == y) {
             chess_cell_position.x = j;
-            chess_cell_position.good = true;
+            chess_cell_position.status = true;
             char_id++;
             break;
         }
     }
 
-    return chess_cell_position.good;
+    return chess_cell_position.status;
 }
+bool Desk::FindChessFigureType()
+{
+    std::string typefig = "QRNBK";
+    for (int i = 0; i < (int)typefig.size(); i++) {
+        if (notation_step_str[char_id] == typefig[i]) {
+            char_id++;
+            figure = typefig[i];
+            return true;
+        }
+    }
+    if ((int)notation_step_str[char_id] >= 97
+        && (int)notation_step_str[char_id] <= 104) {
+        figure = 'P';
+        return true;
+    }
 
+    return false;
+}
 bool Desk::FindChessMoveType()
 {
-    string MoveType = "-x";
-    for (int i; i <(int)notation_step_str.size(); i++)
-    {
-        if (notation_step_str[char_id] == MoveType[i])
-        {
+    std::string typemove = "-x";
+    for (int i = 0; i < (int)typemove.size(); i++) {
+        if (notation_step_str[char_id] == typemove[i]) {
             char_id++;
-            if (!FindChessCellPosition(notation_step_str[char_id], notation_step_str[char_id + 1])) 
-            {
-                std::cout << "Error: The cell position is set incorrectly" << std::endl;
+            if (!FindChessFigurePosition(
+                        notation_step_str[char_id],
+                        notation_step_str[char_id + 1])) {
+                std::cout << "error: cell aim wrong" << std::endl;
                 return false;
             }
-            if (MoveType[i] == '-' && desk[chess_cell_position.x][chess_cell_position.y] != ' ') 
-            {
-                std::cout << "Error: The cell is occupied by a figure";
+            if (typemove[i] == '-'
+                && desk[chess_cell_position.x][chess_cell_position.y] != ' ') {
+                std::cout << "error: cell have figure, need void cell"
+                          << std::endl;
                 return false;
             }
-            if (MoveType[i] == 'x' && desk[chess_cell_position.x][chess_cell_position.y] == ' ') {
-                std::cout
-                        << "Error: The cell is empty";
+            if (typemove[i] == 'x'
+                && desk[chess_cell_position.x][chess_cell_position.y] == ' ') {
+                std::cout << "error: cell dont have figure, need figure in cell"
+                          << std::endl;
                 return false;
             }
-            //ставим на клетку фигуру
             desk[chess_cell_position.x][chess_cell_position.y] = figure;
             return true;
         }
     }
     return false;
 }
-
-bool Desk::CheckFigure()
+bool Desk::CheckColor()
 {
-    int upper_case = 32;
-        if ((int)desk[chess_cell_position.x][chess_cell_position.y] == (int)figure || (int)desk[chess_cell_position.x][chess_cell_position.y] == (int)figure + upper_case) 
-        {
+    int up_reg = 32;
+    if ((int)desk[chess_cell_position.x][chess_cell_position.y] == (int)figure
+        || (int)desk[chess_cell_position.x][chess_cell_position.y]
+                == (int)figure + up_reg) {
         figure = desk[chess_cell_position.x][chess_cell_position.y];
         desk[chess_cell_position.x][chess_cell_position.y] = ' ';
 
         return true;
-
-         } else {
-        std::cout << desk[chess_cell_position.x][chess_cell_position.y] << std::endl;
-        std::cout << chess_cell_position.x << "  " << chess_cell_position.y << std::endl;
-        std::cout << (int)desk[chess_cell_position.x][chess_cell_position.y] << std::endl;
-        std::cout << (int)figure << std::endl;
+    } else {
         return false;
     }
 }
 
-
+bool Desk::DrawChessDesk()
+{
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            std::cout << desk[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "\n\n"
+              << " ------------------" << std::endl;
+    return true;
+}
 
 bool Desk::CheckNotation(std::string filename)
 {
-    file.open(filename);
-    if(!file.is_open())
-    {
-        cout << "Error: Failed to open the file";
+    std::fstream fh;
+    fstream file;
+    file.open(filename, file.in);
+    if (!file.is_open()) {
+        cout << "Error: Chess notation file not found" << endl;
         return -1;
     }
-
-    while(!file.eof())
-    {
+    while (!file.eof()) {
         file >> notation_step_str;
-
         if (!FindChessFigureType()) {
-            std::cout << "Error: The wrong figure" << std::endl;
+            std::cout << "Error: Invalid figure specified" << std::endl;
             return false;
         }
-        if (!FindChessCellPosition(notation_step_str[char_id], notation_step_str[char_id + 1])) {
-            std::cout << "Error: Set the incorrect start cell" << std::endl;
+        if (!FindChessFigurePosition(
+                    notation_step_str[char_id],
+                    notation_step_str[char_id + 1])) {
+            std::cout << "Error: The figure position is set incorrectly"
+                      << std::endl;
             return false;
         }
 
-        if (!CheckFigure()) {
-            std::cout << "Error: Wrong figure in the cage" << std::endl;
+        if (!CheckColor()) {
+            std::cout << "Error: Wrong color figure in cell" << std::endl;
             return false;
         }
         if (!FindChessMoveType()) {
             std::cout << "Error: The wrong move" << std::endl;
+            return false;
+        }
+        std::cout << std::endl;
+
+        if (!DrawChessDesk()) {
+            std::cout << "Error: Failed to display chessboard" << std::endl;
             return false;
         }
 
@@ -133,21 +141,8 @@ bool Desk::CheckNotation(std::string filename)
         char_id = 0;
         figure = ' ';
         move = ' ';
-
     }
 
     file.close();
     return true;
-}
-
-void Desk::DrawDesk()
-{
-    for(int i = 0; i < 10; i++)
-    {
-        for(int j = 0; j < 10; j++)
-        {
-        cout << desk[i][j] << " ";
-        }
-        cout << "\n";
-    }    
 }

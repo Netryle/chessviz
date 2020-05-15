@@ -1,4 +1,4 @@
-
+#include <cstdlib>
 #include <iostream>
 #include <string>
 
@@ -6,21 +6,11 @@
 
 int main()
 {
-    int x;
-    Desk go;
-
-    if (go.CheckNotation("chessnotation.txt")) {
-        std::cout << "Status: Good" << std::endl;
-        go.DrawDesk();
+    Desk desk;
+    if (desk.CheckNotation("chessnotation.txt")) {
     } else {
-        std::cout << "Status: Bad" << std::endl;
-        std::cout << "Filed the wrong notation: ";
-        std::cin >> x;
+        std::cout << "Error:" << desk.notation_step_str << std::endl;
         return -1;
     }
-
-    std::cin >> x;
-
-    system("PAUSE");
     return 0;
 }
